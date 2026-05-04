@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+<title>IHC Klinik · Dewata Tirta Medika</title>
+<meta name="theme-color" content="#0A192F">
+
+<!-- Bootstrap CSS + Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Custom CSS -->
+<link rel="stylesheet" href="style-input.css">
+</head>
+<body>
+
+<!-- ========== LOADING OVERLAY ========== -->
+<div id="loading-overlay" class="loading-overlay">
+  <div class="spinner"></div>
+  <p class="mt-3 text-secondary">Memuat data...</p>
+</div>
+
+<!-- ========== TOAST CONTAINER ========== -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- ========== MAIN LAYOUT ========== -->
+<div class="app-wrapper">
+
+  <!-- SIDEBAR (Desktop only) -->
+  <aside id="sidebar" class="app-sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <img src="logo.png" alt="Logo" class="text-navy" style="width: auto; height: 34px;">
+      </div>
+      <div class="brand-text">
+        <h6>Klinik Dewata Tirta Medika</h6>
+        <small>In House Clinic</small>
+      </div>
+    </div>
+    
+    <!-- Notification Button in Sidebar -->
+    <div class="sidebar-notification-btn" onclick="openNotificationModal()">
+      <i class="bi bi-bell-fill"></i>
+      <span>Notifikasi</span>
+      <span class="notification-count" id="sidebar-notification-count" style="display: none;">0</span>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-page="berobat" onclick="showPage('berobat')">
+        <i class="bi bi-clipboard2-pulse"></i>
+        <span>Berobat</span>
+        <span class="badge-count" id="sidebar-badge-berobat">0</span>
+      </a>
+      <a class="nav-item" data-page="kecelakaan" onclick="showPage('kecelakaan')">
+        <i class="bi bi-exclamation-triangle"></i>
+        <span>Kecelakaan</span>
+        <span class="badge-count" id="sidebar-badge-kecelakaan">0</span>
+      </a>
+      <a class="nav-item" data-page="konsultasi" onclick="showPage('konsultasi')">
+        <i class="bi bi-chat-dots"></i>
+        <span>Konsultasi</span>
+        <span class="badge-count" id="sidebar-badge-konsultasi">0</span>
+      </a>
+    </nav>
+
+    <!-- SIDEBAR FILTER -->
+    <div class="sidebar-filter">
+      <div class="sidebar-filter-title"><i class="bi bi-funnel me-2"></i>Filter</div>
+      <div class="sidebar-filter-group" id="sidebar-filters-berobat">
+        <label class="sidebar-filter-label">Tahun</label>
+        <select class="form-select sidebar-filter-select" id="filter-tahun-berobat" onchange="applyFilter('berobat')">
+          <option value="">Semua Tahun</option>
+        </select>
+        <label class="sidebar-filter-label mt-2">Bulan</label>
+        <select class="form-select sidebar-filter-select" id="filter-bulan-berobat" onchange="applyFilter('berobat')">
+          <option value="">Semua Bulan</option>
+        </select>
+        <label class="sidebar-filter-label mt-2">Pilih Tanggal</label>
+        <input type="date" class="form-control sidebar-filter-select" id="filter-date-berobat" onchange="applyFilter('berobat')">
+        <label class="sidebar-filter-label mt-2">Departemen</label>
+        <select class="form-select sidebar-filter-select" id="filter-dept-berobat" onchange="applyFilter('berobat')">
+          <option value="">Semua Dept</option>
+        </select>
+      </div>
+      <div class="sidebar-filter-group d-none" id="sidebar-filters-kecelakaan">
+        <label class="sidebar-filter-label">Tahun</label>
+        <select class="form-select sidebar-filter-select" id="filter-tahun-kecelakaan" onchange="applyFilter('kecelakaan')">
+          <option value="">Semua Tahun</option>
+        </select>
+        <label class="sidebar-filter-label mt-2">Bulan</label>
+        <select class="form-select sidebar-filter-select" id="filter-bulan-kecelakaan" onchange="applyFilter('kecelakaan')">
+          <option value="">Semua Bulan</option>
+        </select>
+        <label class="sidebar-filter-label mt-2">Pilih Tanggal</label>
+        <input type="date" class="form-control sidebar-filter-select" id="filter-date-kecelakaan" onchange="applyFilter('kecelakaan')">
+        <label class="sidebar-filter-label mt-2">Departemen</label>
+        <select class="form-select sidebar-filter-select" id="filter-dept-kecelakaan" onchange="applyFilter('kecelakaan')">
+          <option value="">Semua Dept</option>
+        </select>
+      </div>
+      <div class="sidebar-filter-group d-none" id="sidebar-filters-konsultasi">
+        <label class="sidebar-filter-label">Tahun</label>
+        <select class="form-select sidebar-filter-select" id="filter-tahun-konsultasi" onchange="applyFilter('konsultasi')">
+          <option value="">Semua Tahun</option>
+        </select>
+        <label class="sidebar-filter-label mt-2">Bulan</label>
+        <select class="form-select sidebar-filter-select" id="filter-bulan-konsultasi" onchange="applyFilter('konsultasi')">
+          <option value="">Semua Bulan</option>
+        </select>
+        <label class="sidebar-filter-label mt-2">Pilih Tanggal</label>
+        <input type="date" class="form-control sidebar-filter-select" id="filter-date-konsultasi" onchange="applyFilter('konsultasi')">
+        <label class="sidebar-filter-label mt-2">Departemen</label>
+        <select class="form-select sidebar-filter-select" id="filter-dept-konsultasi" onchange="applyFilter('konsultasi')">
+          <option value="">Semua Dept</option>
+        </select>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="app-main">
+    <!-- TOPBAR (Mobile only) -->
+    <header class="app-topbar d-md-none">
+      <div class="topbar-brand">
+        <img src="logo.png" alt="Logo" class="text-navy" style="width: auto; height: 34px;">
+      </div>
+      <div style="display: flex; align-items: center;">
+        <!-- Notification Button in Topbar (Mobile) -->
+        <div class="topbar-notification-btn" onclick="openNotificationModal()">
+          <i class="bi bi-bell-fill"></i>
+          <span class="notification-count" id="topbar-notification-count" style="display: none;">0</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- PAGE CONTAINER -->
+    <div class="page-container">
+
+      <!-- ===== BEROBAT PAGE ===== -->
+      <section id="page-berobat" class="page-section active">
+        <div class="page-header">
+          <div class="header-left">
+            <div class="company-selector d-md-block d-none" onclick="openCompanyModal()">
+              <i class="bi bi-building"></i>
+              <span id="page-company-name">Pilih Perusahaan</span>
+              <i class="bi bi-chevron-down ms-auto"></i>
+            </div>
+          </div>
+          <div class="header-actions">
+            <div class="search-wrapper">
+              <i class="bi bi-search"></i>
+              <input type="text" class="form-control" id="search-berobat" placeholder="Cari data..." oninput="debounceSearch('berobat')">
+            </div>
+            <button class="btn btn-primary" onclick="openAddModal('berobat')">
+              <i class="bi bi-plus-lg"></i>Tambah
+            </button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th style="width: 50px">#</th>
+                <th>Nama</th>
+                <th>Tanggal</th>
+                <th>Departemen</th>
+                <th>Keluhan</th>
+                <th>Diagnosa</th>
+                <th class="text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-berobat"></tbody>
+          </table>
+        </div>
+        <div class="pagination-bar">
+          <span class="page-info" id="info-berobat">Memuat...</span>
+          <div class="pagination" id="pages-berobat"></div>
+        </div>
+      </section>
+
+      <!-- ===== KECELAKAAN PAGE ===== -->
+      <section id="page-kecelakaan" class="page-section">
+        <div class="page-header">
+          <div class="header-left">
+            <div class="company-selector d-md-block d-none" onclick="openCompanyModal()">
+              <i class="bi bi-building"></i>
+              <span id="page-company-name">Pilih Perusahaan</span>
+              <i class="bi bi-chevron-down ms-auto"></i>
+            </div>
+          </div>
+          <div class="header-actions">
+            <div class="search-wrapper">
+              <i class="bi bi-search"></i>
+              <input type="text" class="form-control" id="search-kecelakaan" placeholder="Cari data..." oninput="debounceSearch('kecelakaan')">
+            </div>
+            <button class="btn btn-danger" onclick="openAddModal('kecelakaan')">
+              <i class="bi bi-plus-lg"></i>Tambah
+            </button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th style="width: 50px">#</th>
+                <th>Nama</th>
+                <th>Tanggal</th>
+                <th>Departemen</th>
+                <th>Lokasi Kejadian</th>
+                <th>Penyebab</th>
+                <th class="text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-kecelakaan"></tbody>
+          </table>
+        </div>
+        <div class="pagination-bar">
+          <span class="page-info" id="info-kecelakaan">Memuat...</span>
+          <div class="pagination" id="pages-kecelakaan"></div>
+        </div>
+      </section>
+
+      <!-- ===== KONSULTASI PAGE ===== -->
+      <section id="page-konsultasi" class="page-section">
+        <div class="page-header">
+          <div class="header-left">
+            <div class="company-selector d-md-block d-none" onclick="openCompanyModal()">
+              <i class="bi bi-building"></i>
+              <span id="page-company-name">Pilih Perusahaan</span>
+              <i class="bi bi-chevron-down ms-auto"></i>
+            </div>
+          </div>
+          <div class="header-actions">
+            <div class="search-wrapper">
+              <i class="bi bi-search"></i>
+              <input type="text" class="form-control" id="search-konsultasi" placeholder="Cari data..." oninput="debounceSearch('konsultasi')">
+            </div>
+            <button class="btn btn-success" onclick="openAddModal('konsultasi')">
+              <i class="bi bi-plus-lg"></i>Tambah
+            </button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th style="width: 50px">#</th>
+                <th>Nama</th>
+                <th>Tanggal</th>
+                <th>Departemen</th>
+                <th>Keluhan</th>
+                <th>Riwayat Penyakit</th>
+                <th class="text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-konsultasi"></tbody>
+          </table>
+        </div>
+        <div class="pagination-bar">
+          <span class="page-info" id="info-konsultasi">Memuat...</span>
+          <div class="pagination" id="pages-konsultasi"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- BOTTOM NAVIGATION (Mobile only) -->
+<nav id="bottom-nav" class="bottom-nav d-md-none">
+  <a class="bnav-item active" data-page="berobat" onclick="showPage('berobat')">
+    <i class="bi bi-clipboard2-pulse"></i>
+    <span>Berobat</span>
+    <span class="bnav-badge" id="bnav-badge-berobat">0</span>
+  </a>
+  <a class="bnav-item" data-page="kecelakaan" onclick="showPage('kecelakaan')">
+    <i class="bi bi-exclamation-triangle"></i>
+    <span>Kecelakaan</span>
+    <span class="bnav-badge" id="bnav-badge-kecelakaan">0</span>
+  </a>
+  <a class="bnav-item" data-page="konsultasi" onclick="showPage('konsultasi')">
+    <i class="bi bi-chat-dots"></i>
+    <span>Konsultasi</span>
+    <span class="bnav-badge" id="bnav-badge-konsultasi">0</span>
+  </a>
+</nav>
+
+<!-- ========== MODALS ========== -->
+
+<!-- Modal Pilih Perusahaan -->
+<div class="modal fade" id="modalPerusahaan" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-building me-2"></i>Pilih Perusahaan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label fw-semibold">Perusahaan</label>
+        <select class="form-select" id="select-perusahaan">
+          <option value="">-- Memuat data... --</option>
+        </select>
+        <div class="info-hint mt-3">
+          <i class="bi bi-info-circle me-1"></i>
+          Pilihan ini akan memfilter Departemen di semua form data.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-primary" onclick="saveCompany()">
+          <i class="bi bi-check-lg me-1"></i>Konfirmasi
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Notifikasi (Data Perlu Diperbaiki) -->
+<div class="modal fade" id="modalNotification" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header" style="background: #fee2e2; border-bottom: 2px solid var(--red);">
+        <h5 class="modal-title" style="color: var(--red);">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>Data Perlu Diperbaiki
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted mb-3">
+          <i class="bi bi-info-circle me-1"></i>
+          Data berikut memiliki kolom wajib yang masih kosong. Klik pada item untuk memperbaikinya.
+        </p>
+        
+        <!-- Notification Tabs -->
+        <div class="notification-tabs">
+          <button class="notification-tab active" data-type="berobat" onclick="switchNotificationTab('berobat')">
+            <i class="bi bi-clipboard2-pulse me-1"></i>Berobat
+            <span class="tab-badge" id="notification-badge-berobat" style="display: none;">0</span>
+          </button>
+          <button class="notification-tab" data-type="kecelakaan" onclick="switchNotificationTab('kecelakaan')">
+            <i class="bi bi-exclamation-triangle me-1"></i>Kecelakaan
+            <span class="tab-badge" id="notification-badge-kecelakaan" style="display: none;">0</span>
+          </button>
+          <button class="notification-tab" data-type="konsultasi" onclick="switchNotificationTab('konsultasi')">
+            <i class="bi bi-chat-dots me-1"></i>Konsultasi
+            <span class="tab-badge" id="notification-badge-konsultasi" style="display: none;">0</span>
+          </button>
+        </div>
+        
+        <!-- Notification Content -->
+        <div id="notification-content">
+          <!-- Content will be injected here -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detail -->
+<div class="modal fade" id="modalDetail" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="detail-modal-title"><i class="bi bi-info-circle me-2"></i>Detail Data</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="detail-modal-body">
+        <!-- Content will be injected here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-edit-detail" class="btn btn-primary" onclick="editFromDetail()"><i class="bi bi-pencil me-1"></i>Edit</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Berobat -->
+<div class="modal fade" id="modalBerobat" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="title-berobat"><i class="bi bi-clipboard2-pulse me-2"></i>Form Berobat</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Tanggal <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" id="b-tanggal">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Waktu <span class="text-danger">*</span></label>
+            <input type="time" class="form-control" id="b-waktu">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Perusahaan <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="b-perusahaan" readonly>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Departemen <span class="text-danger">*</span></label>
+            <select class="form-select" id="b-departemen">
+              <option value="">-- Pilih --</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Nama Pasien <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="b-nama" placeholder="Nama lengkap">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Jenis Kelamin <span class="text-danger">*</span></label>
+            <select class="form-select" id="b-jk">
+              <option value="">-- Pilih --</option>
+              <option>Laki-laki</option>
+              <option>Perempuan</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Perlu Istirahat <span class="text-danger">*</span></label>
+            <select class="form-select" id="b-istirahat" onchange="toggleIstirahat()">
+              <option value="">-- Pilih --</option>
+              <option>Ya</option>
+              <option>Tidak</option>
+            </select>
+          </div>
+          <div class="col-md-3" id="wrap-hari-istirahat" style="display:none">
+            <label class="form-label">Jumlah Hari Istirahat</label>
+            <input type="number" class="form-control" id="b-hari-istirahat" min="1" placeholder="Hari">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Keluhan <span class="text-danger">*</span></label>
+            <textarea class="form-control" id="b-keluhan" rows="2" placeholder="Keluhan pasien..."></textarea>
+          </div>
+
+          <div class="col-12"><hr class="my-2"><h6 class="fw-bold text-secondary">Diagnosa</h6></div>
+          <div class="col-md-5">
+            <label class="form-label">Kategori Diagnosa</label>
+            <select class="form-select" id="b-kat-diagnosa" onchange="filterNamaDiagnosa()">
+              <option value="">-- Pilih Kategori --</option>
+            </select>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label">Nama Diagnosa</label>
+            <select class="form-select" id="b-nama-diagnosa">
+              <option value="">-- Pilih Nama --</option>
+            </select>
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button type="button" class="btn btn-outline-primary w-100" onclick="tambahDiagnosa()">
+              <i class="bi bi-plus"></i>Tambah
+            </button>
+          </div>
+          <div class="col-12">
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                  <tr><th>#</th><th>Kategori</th><th>Nama Diagnosa</th><th></th></tr>
+                </thead>
+                <tbody id="diagnosa-list-tbody">
+                  <tr><td colspan="4" class="text-center text-muted py-3">Belum ada diagnosa ditambahkan</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="col-12"><hr class="my-2"><h6 class="fw-bold text-secondary">Data Obat</h6></div>
+          <div class="col-md-3">
+            <label class="form-label">Kategori Obat</label>
+            <select class="form-select" id="b-kat-obat" onchange="filterNamaObat()">
+              <option value="">-- Pilih --</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Nama Obat</label>
+            <select class="form-select" id="b-nama-obat">
+              <option value="">-- Pilih --</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Jumlah</label>
+            <input type="number" class="form-control" id="b-jumlah-obat" min="1" placeholder="Qty">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Satuan</label>
+            <select class="form-select" id="b-satuan-obat">
+              <option value="">-- Pilih --</option>
+              <option>Pcs</option><option>Box</option><option>Pack</option>
+              <option>Botol</option><option>Vial</option><option>Ampul</option>
+              <option>Tab</option><option>Kapsul</option><option>Sachet</option>
+              <option>Tube</option><option>Roll</option><option>Set</option>
+              <option>Lembar</option><option>Unit</option><option>Lainnya</option>
+            </select>
+          </div>
+          <div class="col-md-1 d-flex align-items-end">
+            <button type="button" class="btn btn-outline-primary w-100" onclick="tambahObat()">
+              <i class="bi bi-plus"></i>
+            </button>
+          </div>
+          <div class="col-12">
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                  <tr><th>#</th><th>Kategori</th><th>Nama Obat</th><th>Jumlah</th><th>Satuan</th><th></th></tr>
+                </thead>
+                <tbody id="obat-list-tbody">
+                  <tr><td colspan="6" class="text-center text-muted py-3">Belum ada obat ditambahkan</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="col-12"><hr class="my-2"><h6 class="fw-bold text-secondary">Informasi Tambahan</h6></div>
+          <div class="col-md-6">
+            <label class="form-label">Tindakan</label>
+            <textarea class="form-control" id="b-tindakan" rows="2" placeholder="Tindakan yang diberikan..."></textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Keterangan Berobat</label>
+            <textarea class="form-control" id="b-keterangan" rows="2" placeholder="Keterangan tambahan..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" id="btn-save-berobat" class="btn btn-primary" onclick="saveBerobat()">
+          <i class="bi bi-save me-1"></i>Simpan Data
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Kecelakaan -->
+<div class="modal fade" id="modalKecelakaan" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="title-kecelakaan"><i class="bi bi-exclamation-triangle me-2"></i>Form Kecelakaan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Tanggal <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" id="k-tanggal">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Waktu <span class="text-danger">*</span></label>
+            <input type="time" class="form-control" id="k-waktu">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Perusahaan <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="k-perusahaan" readonly>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Departemen <span class="text-danger">*</span></label>
+            <select class="form-select" id="k-departemen">
+              <option value="">-- Pilih --</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Nama <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="k-nama" placeholder="Nama lengkap">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Jenis Kelamin <span class="text-danger">*</span></label>
+            <select class="form-select" id="k-jk">
+              <option value="">-- Pilih --</option>
+              <option>Laki-laki</option>
+              <option>Perempuan</option>
+            </select>
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Lokasi Kejadian <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="k-lokasi" placeholder="Lokasi kejadian...">
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Penyebab <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="k-penyebab" placeholder="Penyebab kejadian...">
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Bagian Yang Terluka <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="k-bagian-terluka" placeholder="Bagian tubuh yang terluka...">
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Tindakan <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="k-tindakan" placeholder="Tindakan yang diberikan...">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Deskripsi Kejadian <span class="text-danger">*</span></label>
+            <textarea class="form-control" id="k-deskripsi" rows="3" placeholder="Deskripsi lengkap kejadian..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" id="btn-save-kecelakaan" class="btn btn-danger" onclick="saveKecelakaan()">
+          <i class="bi bi-save me-1"></i>Simpan Data
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Konsultasi -->
+<div class="modal fade" id="modalKonsultasi" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="title-konsultasi"><i class="bi bi-chat-dots me-2"></i>Form Konsultasi</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Tanggal <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" id="ko-tanggal">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Waktu <span class="text-danger">*</span></label>
+            <input type="time" class="form-control" id="ko-waktu">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Perusahaan <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="ko-perusahaan" readonly>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Departemen <span class="text-danger">*</span></label>
+            <select class="form-select" id="ko-departemen">
+              <option value="">-- Pilih --</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Nama <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="ko-nama" placeholder="Nama lengkap">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Jenis Kelamin <span class="text-danger">*</span></label>
+            <select class="form-select" id="ko-jk">
+              <option value="">-- Pilih --</option>
+              <option>Laki-laki</option>
+              <option>Perempuan</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Keluhan <span class="text-danger">*</span></label>
+            <textarea class="form-control" id="ko-keluhan" rows="2" placeholder="Keluhan pasien..."></textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Riwayat Penyakit</label>
+            <textarea class="form-control" id="ko-riwayat" rows="2" placeholder="Riwayat penyakit..."></textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Saran</label>
+            <textarea class="form-control" id="ko-saran" rows="2" placeholder="Saran dari dokter..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" id="btn-save-konsultasi" class="btn btn-success" onclick="saveKonsultasi()">
+          <i class="bi bi-save me-1"></i>Simpan Data
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus -->
+<div class="modal fade" id="modalDelete" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-body text-center py-4">
+        <div class="delete-icon-wrapper mb-3">
+          <i class="bi bi-trash3-fill"></i>
+        </div>
+        <h5>Hapus Data?</h5>
+        <p class="text-muted">Tindakan ini tidak dapat dibatalkan.</p>
+        <div class="d-flex gap-2 mt-4">
+          <button class="btn btn-outline-secondary flex-fill" data-bs-dismiss="modal">Batal</button>
+          <button class="btn btn-danger flex-fill" id="btn-confirm-delete">Ya, Hapus</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Custom JS -->
+<script src="app.js"></script>
+</body>
+</html>
