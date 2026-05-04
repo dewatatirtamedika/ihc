@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IHC Klinik Dashboard</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js" defer></script>
+
+    <link rel="stylesheet" href="style-dash.css">
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div id="loading-screen">
+    <div class="loader-inner">
+        <div class="loader-pulse"></div>
+        <p class="loader-text">Memuat data...</p>
+    </div>
+</div>
+
+<!-- Login Modal -->
+<div id="login-modal" class="login-modal-overlay hidden">
+    <div class="login-modal-box">
+        <div class="login-modal-head">
+            <div class="login-modal-brand">
+                <img src="logo.png" alt="Logo" class="text-navy" style="width: auto; height: 34px;">
+                <div>
+                    <div class="login-modal-title">Klinik Dewata Tirta Medika</div>
+                    <div class="login-modal-sub">Dashboard Monitoring IHC</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="login-modal-body">
+            <div class="form-field">
+                <label>Unit Perusahaan</label>
+                <div class="select-wrap">
+                    <select id="company-select">
+                        <option value="">— Pilih Unit —</option>
+                    </select>
+                    <i class="bi bi-chevron-down select-icon"></i>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label>Password</label>
+                <div class="input-wrap">
+                    <input type="password" id="company-password" placeholder="Masukkan password" autocomplete="current-password">
+                    <button class="toggle-pw" type="button" onclick="togglePassword()" tabindex="-1">
+                        <i class="bi bi-eye" id="pw-eye"></i>
+                    </button>
+                </div>
+                <span id="pw-error" class="field-error hidden"><i class="bi bi-exclamation-circle me-1"></i>Password salah!</span>
+            </div>
+
+            <button class="btn-login" id="btn-login" onclick="app.enterDashboard()">
+                <span>Masuk Dashboard</span>
+                <i class="bi bi-box-arrow-in-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Main Dashboard -->
+<div id="dashboard" class="hidden">
+
+    <!-- DESKTOP NAVBAR -->
+    <nav class="app-navbar">
+        <div class="navbar-company">
+            <span class="navbar-company-label">Unit:</span>
+            <span class="navbar-company-name" id="navbar-company-name">—</span>
+        </div>
+
+        <div class="navbar-actions">
+            <button class="navbar-btn navbar-btn-sync" onclick="app.fetchData()" title="Sinkronisasi data">
+                <i class="bi bi-arrow-repeat" id="sync-icon"></i>
+                <span>Sinkronisasi</span>
+            </button>
+            <button class="navbar-btn navbar-btn-switch" onclick="app.showLoginGate()" title="Ganti unit">
+                <i class="bi bi-arrow-left-right"></i>
+                <span>Ganti Unit</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- APP WRAPPER -->
+    <div class="app-wrapper">
+
+        <!-- SIDEBAR -->
+        <aside class="app-sidebar">
+
+            <!-- Brand -->
+            <div class="sidebar-brand">
+                <div class="navbar-logo">
+                    <img src="logo.png" alt="Logo" style="width: auto; height: 30px;">
+                </div>
+                <div>
+                    <div class="navbar-title">Klinik Dewata Tirta Medika</div>
+                    <div class="navbar-subtitle">Dashboard Monitoring IHC</div>
+                </div>
+            </div>
+
+            <!-- Tab Nav (sebagai nav-item) -->
+            <nav class="sidebar-nav">
+                <a class="nav-item active" data-tab="Berobat" onclick="app.setTab('Berobat')">
+                    <i class="bi bi-clipboard2-pulse"></i>
+                    <span>Berobat</span>
+                    <span class="badge-count" id="count-Berobat">0</span>
+                </a>
+                <a class="nav-item" data-tab="Kecelakaan" onclick="app.setTab('Kecelakaan')">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>Kecelakaan</span>
+                    <span class="badge-count" id="count-Kecelakaan">0</span>
+                </a>
+                <a class="nav-item" data-tab="Konsultasi" onclick="app.setTab('Konsultasi')">
+                    <i class="bi bi-chat-dots"></i>
+                    <span>Konsultasi</span>
+                    <span class="badge-count" id="count-Konsultasi">0</span>
+                </a>
+                <a class="nav-item" data-tab="Data" onclick="app.setTab('Data')">
+                    <i class="bi bi-table"></i>
+                    <span>Data</span>
+                </a>
+                <a class="nav-item" data-tab="Download" onclick="app.setTab('Download')">
+                    <i class="bi bi-download"></i>
+                    <span>Laporan</span>
+                </a>
+            </nav>
+
+            <!-- Filter - Tanpa search nama dan reset button -->
+            <div class="sidebar-filter">
+                <div class="sidebar-filter-title"><i class="bi bi-funnel me-2"></i> Filter</div>
+
+                <label class="sidebar-filter-label mt-2">Departemen</label>
+                <select class="sidebar-filter-select" id="filter-dept">
+                    <option value="">Semua Departemen</option>
+                </select>
+
+                <label class="sidebar-filter-label mt-2">Bulan</label>
+                <select class="sidebar-filter-select" id="filter-bulan">
+                    <option value="">Semua Bulan</option>
+                    <option value="1">Januari</option><option value="2">Februari</option>
+                    <option value="3">Maret</option><option value="4">April</option>
+                    <option value="5">Mei</option><option value="6">Juni</option>
+                    <option value="7">Juli</option><option value="8">Agustus</option>
+                    <option value="9">September</option><option value="10">Oktober</option>
+                    <option value="11">November</option><option value="12">Desember</option>
+                </select>
+
+                <label class="sidebar-filter-label mt-2">Tahun</label>
+                <select class="sidebar-filter-select" id="filter-tahun">
+                    <option value="">Semua Tahun</option>
+                </select>
+            </div>
+
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="app-main">
+
+            <!-- Topbar (mobile only) -->
+            <header class="app-topbar d-md-none">
+                <div class="topbar-brand">
+                    <i class="bi bi-hospital" style="color:var(--orange);font-size:18px;"></i>
+                    <span>IHC Klinik</span>
+                </div>
+                <div class="company-chip">
+                    <i class="bi bi-building"></i>
+                    <span id="active-company">—</span>
+                </div>
+            </header>
+
+            <!-- Bottom Nav (mobile) -->
+            <nav class="bottom-nav">
+                <a class="bnav-item active" data-tab="Berobat" onclick="app.setTab('Berobat')">
+                    <i class="bi bi-clipboard2-pulse"></i>
+                    <span>Berobat</span>
+                    <span class="bnav-badge" id="bnav-count-Berobat"></span>
+                </a>
+                <a class="bnav-item" data-tab="Kecelakaan" onclick="app.setTab('Kecelakaan')">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>Kecelakaan</span>
+                    <span class="bnav-badge" id="bnav-count-Kecelakaan"></span>
+                </a>
+                <a class="bnav-item" data-tab="Konsultasi" onclick="app.setTab('Konsultasi')">
+                    <i class="bi bi-chat-dots"></i>
+                    <span>Konsultasi</span>
+                    <span class="bnav-badge" id="bnav-count-Konsultasi"></span>
+                </a>
+                <a class="bnav-item" data-tab="Data" onclick="app.setTab('Data')">
+                    <i class="bi bi-table"></i>
+                    <span>Data</span>
+                </a>
+                <a class="bnav-item" data-tab="Download" onclick="app.setTab('Download')">
+                    <i class="bi bi-download"></i>
+                    <span>Download</span>
+                </a>
+            </nav>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <div id="panel-Berobat"    class="tab-panel active"></div>
+                <div id="panel-Kecelakaan" class="tab-panel"></div>
+                <div id="panel-Konsultasi" class="tab-panel"></div>
+                <div id="panel-Data"       class="tab-panel"></div>
+                <div id="panel-Download"   class="tab-panel"></div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<!-- Detail Modal -->
+<div id="detail-modal" class="modal-overlay hidden" onclick="closeDetailModal(event)">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3 id="modal-title">Detail Data</h3>
+            <div class="modal-meta">
+                <span id="modal-count" class="modal-count-badge"></span>
+                <button class="modal-close" onclick="closeDetailModal()"><i class="bi bi-x-lg"></i></button>
+            </div>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
+    </div>
+</div>
+
+<div id="toast" class="toast-item hidden" style="border-left-color: var(--navy);"></div>
+
+<script src="utils.js"></script>
+<script src="charts.js"></script>
+<script src="download.js"></script>
+<script src="app-dash.js"></script>
+</body>
+</html>
