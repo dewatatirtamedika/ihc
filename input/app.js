@@ -180,6 +180,17 @@ function populateMasterDropdowns() {
   // Populate obat category
   populateDropdown('b-kat-obat', '<option value="">-- Pilih Kategori --</option>',
     Object.keys(state.master.obat), k => k, k => k);
+
+  // Populate kategori datalist untuk form CRUD Master Obat & Diagnosa
+  populateDatalist('datalist-kategori-obat', Object.keys(state.master.obat));
+  populateDatalist('datalist-kategori-diagnosa', Object.keys(state.master.diagnosa));
+}
+
+// Helper: isi <datalist> dengan opsi kategori unik yang sudah ada
+function populateDatalist(id, values) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = (values || []).map(v => `<option value="${esc(v)}"></option>`).join('');
 }
 
 // Helper: Generic dropdown population (DRY principle)
@@ -408,6 +419,12 @@ function showPage(name) {
     const fg = document.getElementById('sidebar-filters-' + p);
     if (fg) fg.classList.toggle('d-none', p !== name);
   });
+
+  // Load master data (Obat & Diagnosa) when its page is opened
+  if (name === 'obat-diagnosa') {
+    loadMasterData('obat', 1);
+    loadMasterData('diagnosa', 1);
+  }
 }
 
 // ════════════════════════════════════════════════════════
@@ -974,6 +991,215 @@ async function doDelete(type, rowIndex) {
     await loadData(type);
   } catch (e) {
     toast('error','Gagal Menghapus', e.message);
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  MASTER DATA: OBAT & DIAGNOSA (CRUD)
+// ════════════════════════════════════════════════════════
+const MASTER_SHEET_MAP = { obat: 'Obat', diagnosa: 'Diagnosa' };
+const MASTER_FIELDS = {
+  obat:     { kategori: 'Data Kategori Obat',     nama: 'Data Nama Obat' },
+  diagnosa: { kategori: 'Data Kategori Diagnosa', nama: 'Data Nama Diagnosa' }
+};
+
+state.crud = {
+  obat:     { rows: [], total: 0, page: 1, totalPages: 1, search: '', editRowIndex: null },
+  diagnosa: { rows: [], total: 0, page: 1, totalPages: 1, search: '', editRowIndex: null }
+};
+
+function switchMasterTab(tab) {
+  document.querySelectorAll('.med-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.med-tab[data-tab="${tab}"]`)?.classList.add('active');
+  document.querySelectorAll('.med-tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('tabpane-' + tab)?.classList.add('active');
+}
+
+async function loadMasterData(type, page) {
+  if (GAS_URL.includes('GANTI')) return;
+  if (page !== undefined) state.crud[type].page = page;
+  renderMasterSkeleton(type);
+  try {
+    const res = await gasRequest('getData', {
+      sheet   : MASTER_SHEET_MAP[type],
+      search  : state.crud[type].search,
+      page    : state.crud[type].page,
+      perPage : PER_PAGE,
+    });
+    if (res.status !== 'success') throw new Error(res.message);
+    state.crud[type].rows       = res.data || [];
+    state.crud[type].total      = res.total || 0;
+    state.crud[type].page       = res.page || 1;
+    state.crud[type].totalPages = res.totalPages || 1;
+    renderMasterTable(type);
+  } catch (e) {
+    const tbody = document.getElementById('tbody-master-' + type);
+    if (tbody) {
+      tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><i class="bi bi-wifi-off"></i><p>Gagal memuat: ${esc(e.message)}</p></div></td></tr>`;
+    }
+    toast('error', 'Gagal Memuat', e.message);
+  }
+}
+
+function renderMasterSkeleton(type) {
+  const tbody = document.getElementById('tbody-master-' + type);
+  if (!tbody) return;
+  tbody.innerHTML = Array(5).fill(
+    '<tr>' + Array(4).fill('<td><div class="skeleton"></div></td>').join('') + '</tr>'
+  ).join('');
+}
+
+function renderMasterTable(type) {
+  const { rows, total, page, totalPages } = state.crud[type];
+  const start = (page - 1) * PER_PAGE;
+  const tbody = document.getElementById('tbody-master-' + type);
+  if (!tbody) return;
+
+  tbody.innerHTML = rows.length
+    ? rows.map((r, i) => buildMasterRow(type, r, start + i + 1)).join('')
+    : `<tr><td colspan="4"><div class="empty-state"><i class="bi bi-inbox"></i><p>Tidak ada data ditemukan</p></div></td></tr>`;
+
+  const info = document.getElementById('info-master-' + type);
+  if (info) {
+    info.textContent = total
+      ? `Menampilkan ${start + 1}–${Math.min(start + PER_PAGE, total)} dari ${total} data`
+      : 'Tidak ada data';
+  }
+
+  renderMasterPagination(type, page, totalPages);
+}
+
+function buildMasterRow(type, r, no) {
+  const idx = r._rowIndex;
+  const f = MASTER_FIELDS[type];
+  return `<tr>
+    <td>${no}</td>
+    <td>${esc(r[f.kategori] || '')}</td>
+    <td>${esc(r[f.nama] || '')}</td>
+    <td><div class="action-btns">
+      <button class="btn-icon-sm btn-edit" onclick="openEditMasterModal('${type}',${idx})" title="Edit"><i class="bi bi-pencil"></i></button>
+      <button class="btn-icon-sm btn-delete" onclick="confirmDeleteMaster('${type}',${idx})" title="Hapus"><i class="bi bi-trash3"></i></button>
+    </div></td>
+  </tr>`;
+}
+
+function renderMasterPagination(type, page, totalPages) {
+  const wrap = document.getElementById('pages-master-' + type);
+  if (!wrap) return;
+  if (totalPages <= 1) { wrap.innerHTML = ''; return; }
+
+  let html = `<button class="page-btn" ${page===1?'disabled':''} onclick="gotoMasterPage('${type}',${page-1})"><i class="bi bi-chevron-left"></i></button>`;
+  paginationRange(page, totalPages).forEach(p => {
+    if (p === '...') html += `<span class="page-btn disabled">…</span>`;
+    else html += `<button class="page-btn ${p===page?'active':''}" onclick="gotoMasterPage('${type}',${p})">${p}</button>`;
+  });
+  html += `<button class="page-btn" ${page===totalPages?'disabled':''} onclick="gotoMasterPage('${type}',${page+1})"><i class="bi bi-chevron-right"></i></button>`;
+  wrap.innerHTML = html;
+}
+
+function gotoMasterPage(type, page) { loadMasterData(type, page); }
+
+function debounceMasterSearch(type) {
+  const key = 'master-' + type;
+  clearTimeout(state.debounceTimers[key]);
+  state.debounceTimers[key] = setTimeout(() => {
+    state.crud[type].search = document.getElementById(`search-master-${type}`)?.value.trim() || '';
+    loadMasterData(type, 1);
+  }, 350);
+}
+
+function openAddMasterModal(type) {
+  state.crud[type].editRowIndex = null;
+  setVal(`m-${type}-kategori`, '');
+  setVal(`m-${type}-nama`, '');
+  document.getElementById(`title-master-${type}`).innerHTML =
+    `<i class="bi bi-plus-circle me-2"></i>Tambah ${type === 'obat' ? 'Obat' : 'Diagnosa'}`;
+  openModal('modalMaster' + type.charAt(0).toUpperCase() + type.slice(1));
+}
+
+function openEditMasterModal(type, rowIndex) {
+  const record = state.crud[type].rows.find(r => r._rowIndex === rowIndex);
+  if (!record) return toast('error', 'Error', 'Data tidak ditemukan.');
+  state.crud[type].editRowIndex = rowIndex;
+  const f = MASTER_FIELDS[type];
+  setVal(`m-${type}-kategori`, record[f.kategori]);
+  setVal(`m-${type}-nama`, record[f.nama]);
+  document.getElementById(`title-master-${type}`).innerHTML =
+    `<i class="bi bi-pencil me-2"></i>Edit ${type === 'obat' ? 'Obat' : 'Diagnosa'}`;
+  openModal('modalMaster' + type.charAt(0).toUpperCase() + type.slice(1));
+}
+
+async function saveMaster(type) {
+  const kategoriId = `m-${type}-kategori`, namaId = `m-${type}-nama`;
+  if (!validateRequired([kategoriId, namaId])) return;
+
+  const f = MASTER_FIELDS[type];
+  const row = {
+    [f.kategori]: document.getElementById(kategoriId).value.trim(),
+    [f.nama]: document.getElementById(namaId).value.trim(),
+  };
+
+  const isEdit = state.crud[type].editRowIndex !== null;
+  const btn = document.getElementById(`btn-save-master-${type}`);
+  const orig = btn?.innerHTML || '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
+  }
+
+  try {
+    let res;
+    if (isEdit) {
+      const origRow = state.crud[type].rows.find(r => r._rowIndex === state.crud[type].editRowIndex);
+      row['Timestamp'] = origRow?.['Timestamp'] || '';
+      row['ID'] = origRow?.['ID'] || '';
+      res = await gasRequest('updateRow', { sheet: MASTER_SHEET_MAP[type], rowIndex: state.crud[type].editRowIndex, row });
+    } else {
+      res = await gasRequest('addRow', { sheet: MASTER_SHEET_MAP[type], row });
+    }
+    if (res.status !== 'success') throw new Error(res.message);
+    toast('success', isEdit ? 'Data Diperbarui' : 'Data Ditambahkan', 'Operasi berhasil.');
+    closeModal('modalMaster' + type.charAt(0).toUpperCase() + type.slice(1));
+    state.crud[type].editRowIndex = null;
+    await loadMasterData(type);
+    refreshMasterDropdowns();
+  } catch (e) {
+    toast('error', 'Gagal Menyimpan', e.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = orig;
+    }
+  }
+}
+
+function confirmDeleteMaster(type, rowIndex) {
+  document.getElementById('btn-confirm-delete').onclick = () => doDeleteMaster(type, rowIndex);
+  openModal('modalDelete');
+}
+
+async function doDeleteMaster(type, rowIndex) {
+  closeModal('modalDelete');
+  try {
+    const res = await gasRequest('deleteRow', { sheet: MASTER_SHEET_MAP[type], rowIndex });
+    if (res.status !== 'success') throw new Error(res.message);
+    toast('success', 'Data Dihapus', 'Data berhasil dihapus.');
+    await loadMasterData(type);
+    refreshMasterDropdowns();
+  } catch (e) {
+    toast('error', 'Gagal Menghapus', e.message);
+  }
+}
+
+// Refresh dropdown Kategori/Nama Obat & Diagnosa di form Berobat setelah data master berubah
+async function refreshMasterDropdowns() {
+  try {
+    const res = await gasRequest('getMasterData');
+    if (res.status !== 'success') return;
+    state.master = res.data;
+    populateMasterDropdowns();
+  } catch (e) {
+    console.error('Gagal me-refresh master dropdown:', e);
   }
 }
 

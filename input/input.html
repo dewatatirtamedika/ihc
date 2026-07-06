@@ -66,6 +66,10 @@
         <span>Konsultasi</span>
         <span class="badge-count" id="sidebar-badge-konsultasi">0</span>
       </a>
+      <a class="nav-item" data-page="obat-diagnosa" onclick="showPage('obat-diagnosa')">
+        <i class="bi bi-capsule"></i>
+        <span>Obat & Diagnosa</span>
+      </a>
     </nav>
 
     <!-- SIDEBAR FILTER -->
@@ -266,6 +270,91 @@
           <div class="pagination" id="pages-konsultasi"></div>
         </div>
       </section>
+
+      <!-- ===== OBAT & DIAGNOSA PAGE ===== -->
+      <section id="page-obat-diagnosa" class="page-section">
+        <div class="page-header">
+          <div class="header-left">
+            <h2><i class="bi bi-capsule me-2"></i>Obat & Diagnosa</h2>
+          </div>
+        </div>
+
+        <!-- Sub Tabs -->
+        <div class="med-tabs">
+          <button class="med-tab active" data-tab="obat" onclick="switchMasterTab('obat')">
+            <i class="bi bi-capsule me-1"></i>CRUD Obat
+          </button>
+          <button class="med-tab" data-tab="diagnosa" onclick="switchMasterTab('diagnosa')">
+            <i class="bi bi-clipboard2-pulse me-1"></i>CRUD Diagnosa
+          </button>
+        </div>
+
+        <!-- TAB: CRUD OBAT -->
+        <div class="med-tab-pane active" id="tabpane-obat">
+          <div class="page-header">
+            <div class="header-left"></div>
+            <div class="header-actions">
+              <div class="search-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" class="form-control" id="search-master-obat" placeholder="Cari obat..." oninput="debounceMasterSearch('obat')">
+              </div>
+              <button class="btn btn-primary" onclick="openAddMasterModal('obat')">
+                <i class="bi bi-plus-lg"></i>Tambah Obat
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th style="width: 50px">#</th>
+                  <th>Kategori Obat</th>
+                  <th>Nama Obat</th>
+                  <th class="text-center" style="width:110px">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-master-obat"></tbody>
+            </table>
+          </div>
+          <div class="pagination-bar">
+            <span class="page-info" id="info-master-obat">Memuat...</span>
+            <div class="pagination" id="pages-master-obat"></div>
+          </div>
+        </div>
+
+        <!-- TAB: CRUD DIAGNOSA -->
+        <div class="med-tab-pane" id="tabpane-diagnosa">
+          <div class="page-header">
+            <div class="header-left"></div>
+            <div class="header-actions">
+              <div class="search-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" class="form-control" id="search-master-diagnosa" placeholder="Cari diagnosa..." oninput="debounceMasterSearch('diagnosa')">
+              </div>
+              <button class="btn btn-primary" onclick="openAddMasterModal('diagnosa')">
+                <i class="bi bi-plus-lg"></i>Tambah Diagnosa
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th style="width: 50px">#</th>
+                  <th>Kategori Diagnosa</th>
+                  <th>Nama Diagnosa</th>
+                  <th class="text-center" style="width:110px">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-master-diagnosa"></tbody>
+            </table>
+          </div>
+          <div class="pagination-bar">
+            <span class="page-info" id="info-master-diagnosa">Memuat...</span>
+            <div class="pagination" id="pages-master-diagnosa"></div>
+          </div>
+        </div>
+      </section>
     </div>
   </main>
 </div>
@@ -286,6 +375,10 @@
     <i class="bi bi-chat-dots"></i>
     <span>Konsultasi</span>
     <span class="bnav-badge" id="bnav-badge-konsultasi">0</span>
+  </a>
+  <a class="bnav-item" data-page="obat-diagnosa" onclick="showPage('obat-diagnosa')">
+    <i class="bi bi-capsule"></i>
+    <span>Obat</span>
   </a>
 </nav>
 
@@ -666,6 +759,70 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
         <button type="button" id="btn-save-konsultasi" class="btn btn-success" onclick="saveKonsultasi()">
+          <i class="bi bi-save me-1"></i>Simpan Data
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Master Obat -->
+<div class="modal fade" id="modalMasterObat" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="title-master-obat"><i class="bi bi-capsule me-2"></i>Tambah Obat</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label">Kategori Obat <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="m-obat-kategori" list="datalist-kategori-obat" autocomplete="off" placeholder="Pilih kategori atau ketik kategori baru">
+            <datalist id="datalist-kategori-obat"></datalist>
+            <small class="text-muted">Klik untuk memilih kategori yang sudah ada, atau ketik untuk membuat kategori baru.</small>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Nama Obat <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="m-obat-nama" placeholder="Contoh: Paracetamol 500mg">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" id="btn-save-master-obat" class="btn btn-primary" onclick="saveMaster('obat')">
+          <i class="bi bi-save me-1"></i>Simpan Data
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Master Diagnosa -->
+<div class="modal fade" id="modalMasterDiagnosa" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="title-master-diagnosa"><i class="bi bi-clipboard2-pulse me-2"></i>Tambah Diagnosa</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label">Kategori Diagnosa <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="m-diagnosa-kategori" list="datalist-kategori-diagnosa" autocomplete="off" placeholder="Pilih kategori atau ketik kategori baru">
+            <datalist id="datalist-kategori-diagnosa"></datalist>
+            <small class="text-muted">Klik untuk memilih kategori yang sudah ada, atau ketik untuk membuat kategori baru.</small>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Nama Diagnosa <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="m-diagnosa-nama" placeholder="Contoh: ISPA">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" id="btn-save-master-diagnosa" class="btn btn-primary" onclick="saveMaster('diagnosa')">
           <i class="bi bi-save me-1"></i>Simpan Data
         </button>
       </div>

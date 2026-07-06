@@ -677,6 +677,42 @@ a {
   background: var(--orange);
 }
 
+/* ----- MED SUB-TABS (Obat & Diagnosa Page) ----- */
+.med-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 16px;
+}
+.med-tab {
+  padding: 10px 18px;
+  background: none;
+  border: none;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius) var(--radius) 0 0;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.med-tab:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+.med-tab.active {
+  background: var(--navy);
+  color: white;
+}
+.med-tab-pane {
+  display: none;
+}
+.med-tab-pane.active {
+  display: block;
+}
+
 /* ----- ACTION BUTTONS (TABLE) ----- */
 .action-btns {
   display: flex;
