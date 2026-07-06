@@ -11,7 +11,9 @@ const downloadReport = {
         return {
             tahun: el('filter-tahun')?.value || '',
             bulan: el('filter-bulan')?.value || '',
-            dept:  el('filter-dept')?.value  || '',
+            dept:  (typeof _state !== 'undefined' && Array.isArray(_state.filters.dept))
+                     ? _state.filters.dept
+                     : [],
         };
     },
 

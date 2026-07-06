@@ -140,9 +140,21 @@
                 <div class="sidebar-filter-title"><i class="bi bi-funnel me-2"></i> Filter</div>
 
                 <label class="sidebar-filter-label mt-2">Departemen</label>
-                <select class="sidebar-filter-select" id="filter-dept">
-                    <option value="">Semua Departemen</option>
-                </select>
+                <div class="multiselect" id="filter-dept-wrap">
+                    <button type="button" class="sidebar-filter-select multiselect-toggle" id="filter-dept-toggle" onclick="_toggleDeptDropdown()">
+                        <span id="filter-dept-toggle-text">Semua Departemen</span>
+                        <i class="bi bi-chevron-down multiselect-caret"></i>
+                    </button>
+                    <div class="multiselect-panel hidden" id="filter-dept-panel">
+                        <div class="multiselect-panel-actions">
+                            <button type="button" onclick="_selectAllDept()">Pilih Semua</button>
+                            <button type="button" onclick="_clearDeptSelection()">Hapus</button>
+                        </div>
+                        <div class="multiselect-options" id="filter-dept-options">
+                            <!-- checkbox options injected by app-dash.js -->
+                        </div>
+                    </div>
+                </div>
 
                 <label class="sidebar-filter-label mt-2">Bulan</label>
                 <select class="sidebar-filter-select" id="filter-bulan">

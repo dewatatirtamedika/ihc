@@ -38,7 +38,7 @@ const _state = {
   activeTab: 'Berobat',
   activeDataSubTab: 'Berobat',
   filters: {
-    dept:  '',
+    dept:  [],   // array: bisa pilih lebih dari satu departemen
     bulan: '',
     tahun: '',
   },
@@ -219,8 +219,8 @@ const app = {
                         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
       html += `<div class="report-meta">Bulan: ${bulanNames[parseInt(filters.bulan) - 1]}</div>`;
     }
-    if (filters.dept) {
-      html += `<div class="report-meta">Departemen: ${filters.dept}</div>`;
+    if (filters.dept && filters.dept.length > 0) {
+      html += `<div class="report-meta">Departemen: ${filters.dept.join(', ')}</div>`;
     }
     
     const now = new Date();
@@ -489,13 +489,84 @@ function _parseDMY(s) {
 //  FILTER LOGIC
 // ════════════════════════════════════════════════════════
 function _setupFilterListeners() {
-  const deptEl  = document.getElementById('filter-dept');
   const bulanEl = document.getElementById('filter-bulan');
   const tahunEl = document.getElementById('filter-tahun');
 
-  deptEl?.addEventListener('change',  () => { _state.filters.dept  = deptEl.value;  _applyFilters(); });
   bulanEl?.addEventListener('change', () => { _state.filters.bulan = bulanEl.value; _applyFilters(); });
   tahunEl?.addEventListener('change', () => { _state.filters.tahun = tahunEl.value; _applyFilters(); });
+
+  // Klik di luar dropdown Departemen akan menutupnya
+  document.addEventListener('click', (e) => {
+    const wrap = document.getElementById('filter-dept-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      _closeDeptDropdown();
+    }
+  });
+}
+
+// ── Multi-select Departemen: dropdown open/close ────────
+function _toggleDeptDropdown() {
+  const wrap  = document.getElementById('filter-dept-wrap');
+  const panel = document.getElementById('filter-dept-panel');
+  if (!wrap || !panel) return;
+  const isOpen = !panel.classList.contains('hidden');
+  isOpen ? _closeDeptDropdown() : _openDeptDropdown();
+}
+
+function _openDeptDropdown() {
+  const wrap  = document.getElementById('filter-dept-wrap');
+  const panel = document.getElementById('filter-dept-panel');
+  if (!wrap || !panel) return;
+  panel.classList.remove('hidden');
+  wrap.classList.add('open');
+}
+
+function _closeDeptDropdown() {
+  const wrap  = document.getElementById('filter-dept-wrap');
+  const panel = document.getElementById('filter-dept-panel');
+  if (!wrap || !panel) return;
+  panel.classList.add('hidden');
+  wrap.classList.remove('open');
+}
+
+// Dipanggil saat sebuah checkbox departemen dicentang/dilepas
+function _onDeptOptionChange(dept, checked) {
+  const list = _state.filters.dept;
+  const idx  = list.indexOf(dept);
+  if (checked && idx === -1) list.push(dept);
+  if (!checked && idx !== -1) list.splice(idx, 1);
+  _updateDeptToggleLabel();
+  _applyFilters();
+}
+
+function _selectAllDept() {
+  const checkboxes = document.querySelectorAll('#filter-dept-options input[type="checkbox"]');
+  const allDepts = [...checkboxes].map(cb => cb.value);
+  checkboxes.forEach(cb => { cb.checked = true; });
+  _state.filters.dept = allDepts;
+  _updateDeptToggleLabel();
+  _applyFilters();
+}
+
+function _clearDeptSelection() {
+  const checkboxes = document.querySelectorAll('#filter-dept-options input[type="checkbox"]');
+  checkboxes.forEach(cb => { cb.checked = false; });
+  _state.filters.dept = [];
+  _updateDeptToggleLabel();
+  _applyFilters();
+}
+
+function _updateDeptToggleLabel() {
+  const label = document.getElementById('filter-dept-toggle-text');
+  if (!label) return;
+  const selected = _state.filters.dept;
+  if (!selected || selected.length === 0) {
+    label.textContent = 'Semua Departemen';
+  } else if (selected.length === 1) {
+    label.textContent = selected[0];
+  } else {
+    label.textContent = `${selected.length} Departemen dipilih`;
+  }
 }
 
 function _applyFilters() {
@@ -503,7 +574,7 @@ function _applyFilters() {
 
   function filter(rows) {
     return rows.filter(r => {
-      if (dept  && r.Departemen !== dept)  return false;
+      if (dept && dept.length > 0 && !dept.includes(r.Departemen)) return false;
       if (bulan && String(r.bulan) !== bulan) return false;
       if (tahun && String(r.tahun) !== tahun) return false;
       return true;
@@ -604,18 +675,30 @@ function _buildFilterOptions() {
     if (r.tahun > 0)  tahuns.add(String(r.tahun));
   });
 
-  const deptEl  = document.getElementById('filter-dept');
+  const deptOptionsEl = document.getElementById('filter-dept-options');
   const tahunEl = document.getElementById('filter-tahun');
 
-  if (deptEl) {
-    const currentDept = deptEl.value;
-    deptEl.innerHTML = '<option value="">Semua Departemen</option>';
-    [...depts].sort().forEach(d => {
-      const opt = document.createElement('option');
-      opt.value = d; opt.textContent = d;
-      if (d === currentDept) opt.selected = true;
-      deptEl.appendChild(opt);
-    });
+  if (deptOptionsEl) {
+    // Pertahankan departemen yang masih tersedia dari pilihan sebelumnya
+    const currentSelection = _state.filters.dept.filter(d => depts.has(d));
+    _state.filters.dept = currentSelection;
+
+    const sortedDepts = [...depts].sort();
+    if (sortedDepts.length === 0) {
+      deptOptionsEl.innerHTML = '<div class="multiselect-empty">Tidak ada data departemen</div>';
+    } else {
+      deptOptionsEl.innerHTML = sortedDepts.map(d => {
+        const checked = currentSelection.includes(d) ? 'checked' : '';
+        const safeD   = escapeHtml(d);
+        return `
+          <label class="multiselect-option">
+            <input type="checkbox" value="${safeD}" ${checked}
+                   onchange="_onDeptOptionChange(this.value, this.checked)">
+            <span title="${safeD}">${safeD}</span>
+          </label>`;
+      }).join('');
+    }
+    _updateDeptToggleLabel();
   }
 
   if (tahunEl) {
@@ -631,15 +714,20 @@ function _buildFilterOptions() {
 }
 
 function _resetFilters(rerender = true) {
-  _state.filters = { dept: '', bulan: '', tahun: '' };
+  _state.filters = { dept: [], bulan: '', tahun: '' };
   _state.dataSearch = { berobat: '', kecelakaan: '', konsultasi: '' };
-  
-  const fields = ['filter-dept','filter-bulan','filter-tahun'];
+
+  const fields = ['filter-bulan','filter-tahun'];
   fields.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  
+
+  // Reset checkbox Departemen + label toggle
+  document.querySelectorAll('#filter-dept-options input[type="checkbox"]').forEach(cb => { cb.checked = false; });
+  _updateDeptToggleLabel();
+  _closeDeptDropdown();
+
   if (rerender) {
     _applyFilters();
   }
