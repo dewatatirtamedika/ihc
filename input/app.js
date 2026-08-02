@@ -51,10 +51,12 @@ const FORM_FIELDS = {
 };
 
 const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const USER_NAMES = ['Dedeh Siti Rohmah', 'Tiara Marsanda', 'Dea Ayudina'];
 
 const state = {
   master: null,
   company: '',
+  userName: '',
   data: {
     berobat:    { rows: [], total: 0, page: 1, totalPages: 1 },
     kecelakaan: { rows: [], total: 0, page: 1, totalPages: 1 },
@@ -149,9 +151,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     state.master = res.data;
     populateMasterDropdowns();
     hideLoading();
-    const saved = sessionStorage.getItem('selectedCompany');
-    if (saved && state.master.perusahaan.includes(saved)) {
-      applyCompany(saved);
+    const savedCompany = sessionStorage.getItem('selectedCompany');
+    const savedUser = sessionStorage.getItem('selectedUser');
+    if (savedCompany && state.master.perusahaan.includes(savedCompany)) {
+      applyCompany(savedCompany, savedUser || '');
     } else {
       openModal('modalPerusahaan');
     }
@@ -172,6 +175,10 @@ function populateMasterDropdowns() {
   // Populate company selector
   populateDropdown('select-perusahaan', '<option value="">-- Pilih Perusahaan --</option>', 
     state.master.perusahaan, p => p, p => p);
+
+  // Populate user selector
+  populateDropdown('select-user', '<option value="">-- Pilih Nama User --</option>',
+    USER_NAMES, u => u, u => u);
   
   // Populate diagnosa category
   populateDropdown('b-kat-diagnosa', '<option value="">-- Pilih Kategori --</option>',
@@ -229,24 +236,30 @@ function fillDepartemenDropdown(selectId) {
 // ════════════════════════════════════════════════════════
 function openCompanyModal() {
   const sel = document.getElementById('select-perusahaan');
+  const userSel = document.getElementById('select-user');
   if (state.company && sel) sel.value = state.company;
+  if (state.userName && userSel) userSel.value = state.userName;
   openModal('modalPerusahaan');
 }
 
 function saveCompany() {
-  const val = document.getElementById('select-perusahaan')?.value;
-  if (!val) { toast('warning', 'Perhatian', 'Pilih perusahaan terlebih dahulu.'); return; }
-  applyCompany(val);
+  const company = document.getElementById('select-perusahaan')?.value;
+  const userName = document.getElementById('select-user')?.value;
+  if (!company) { toast('warning', 'Perhatian', 'Pilih perusahaan terlebih dahulu.'); return; }
+  if (!userName) { toast('warning', 'Perhatian', 'Pilih nama user terlebih dahulu.'); return; }
+  applyCompany(company, userName);
   closeModal('modalPerusahaan');
 }
 
-function applyCompany(company) {
+function applyCompany(company, userName = '') {
   state.company = company;
+  state.userName = userName || state.userName;
   sessionStorage.setItem('selectedCompany', company);
+  sessionStorage.setItem('selectedUser', state.userName);
   
   document.querySelectorAll('[id$="-company-name"]').forEach(el => el.textContent = company);
   
-  toast('success', 'Perusahaan Dipilih', company);
+  toast('success', 'Perusahaan Dipilih', `${company}${state.userName ? ' • ' + state.userName : ''}`);
   
   // Reset all filters and reload data
   Object.values(DATA_TYPES).forEach(type => {
@@ -414,11 +427,13 @@ function showPage(name) {
   document.getElementById('page-' + name)?.classList.add('active');
   document.querySelectorAll(`[data-page="${name}"]`).forEach(el => el.classList.add('active'));
 
-  // Toggle sidebar filter groups
-  Object.values(DATA_TYPES).forEach(p => {
-    const fg = document.getElementById('sidebar-filters-' + p);
-    if (fg) fg.classList.toggle('d-none', p !== name);
-  });
+  const dataPages = Object.values(DATA_TYPES);
+  if (dataPages.includes(name)) {
+    dataPages.forEach(p => {
+      const fg = document.getElementById('sidebar-filters-' + p);
+      if (fg) fg.classList.toggle('d-none', p !== name);
+    });
+  }
 
   // Load master data (Obat & Diagnosa) when its page is opened
   if (name === 'obat-diagnosa') {

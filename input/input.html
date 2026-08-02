@@ -128,20 +128,6 @@
 
   <!-- MAIN CONTENT -->
   <main class="app-main">
-    <!-- TOPBAR (Mobile only) -->
-    <header class="app-topbar d-md-none">
-      <div class="topbar-brand">
-        <img src="logo.png" alt="Logo" class="text-navy" style="width: auto; height: 34px;">
-      </div>
-      <div style="display: flex; align-items: center;">
-        <!-- Notification Button in Topbar (Mobile) -->
-        <div class="topbar-notification-btn" onclick="openNotificationModal()">
-          <i class="bi bi-bell-fill"></i>
-          <span class="notification-count" id="topbar-notification-count" style="display: none;">0</span>
-        </div>
-      </div>
-    </header>
-
     <!-- PAGE CONTAINER -->
     <div class="page-container">
 
@@ -282,10 +268,10 @@
         <!-- Sub Tabs -->
         <div class="med-tabs">
           <button class="med-tab active" data-tab="obat" onclick="switchMasterTab('obat')">
-            <i class="bi bi-capsule me-1"></i>CRUD Obat
+            <i class="bi bi-capsule me-1"></i>Obat
           </button>
           <button class="med-tab" data-tab="diagnosa" onclick="switchMasterTab('diagnosa')">
-            <i class="bi bi-clipboard2-pulse me-1"></i>CRUD Diagnosa
+            <i class="bi bi-clipboard2-pulse me-1"></i>Diagnosa
           </button>
         </div>
 
@@ -359,29 +345,6 @@
   </main>
 </div>
 
-<!-- BOTTOM NAVIGATION (Mobile only) -->
-<nav id="bottom-nav" class="bottom-nav d-md-none">
-  <a class="bnav-item active" data-page="berobat" onclick="showPage('berobat')">
-    <i class="bi bi-clipboard2-pulse"></i>
-    <span>Berobat</span>
-    <span class="bnav-badge" id="bnav-badge-berobat">0</span>
-  </a>
-  <a class="bnav-item" data-page="kecelakaan" onclick="showPage('kecelakaan')">
-    <i class="bi bi-exclamation-triangle"></i>
-    <span>Kecelakaan</span>
-    <span class="bnav-badge" id="bnav-badge-kecelakaan">0</span>
-  </a>
-  <a class="bnav-item" data-page="konsultasi" onclick="showPage('konsultasi')">
-    <i class="bi bi-chat-dots"></i>
-    <span>Konsultasi</span>
-    <span class="bnav-badge" id="bnav-badge-konsultasi">0</span>
-  </a>
-  <a class="bnav-item" data-page="obat-diagnosa" onclick="showPage('obat-diagnosa')">
-    <i class="bi bi-capsule"></i>
-    <span>Obat</span>
-  </a>
-</nav>
-
 <!-- ========== MODALS ========== -->
 
 <!-- Modal Pilih Perusahaan -->
@@ -397,6 +360,12 @@
         <select class="form-select" id="select-perusahaan">
           <option value="">-- Memuat data... --</option>
         </select>
+
+        <label class="form-label fw-semibold mt-3">Nama User</label>
+        <select class="form-select" id="select-user">
+          <option value="">-- Pilih Nama User --</option>
+        </select>
+
         <div class="info-hint mt-3">
           <i class="bi bi-info-circle me-1"></i>
           Pilihan ini akan memfilter Departemen di semua form data.
