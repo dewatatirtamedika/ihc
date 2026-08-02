@@ -1,17 +1,4 @@
 :root {
-  /* MONOCHROME SCALE */
-  --mono-0: #ffffff;
-  --mono-1: #f8fafc;
-  --mono-2: #f1f5f9;
-  --mono-3: #e2e8f0;
-  --mono-4: #cbd5e1;
-  --mono-5: #94a3b8;
-  --mono-6: #64748b;
-  --mono-7: #475569;
-  --mono-8: #334155;
-  --mono-9: #1e293b;
-  --mono-10: #0f172a;
-
   /* SEMANTIC ALIASES */
   --bg-primary:    #f8fafc;
   --bg-secondary:  #ffffff;
@@ -602,36 +589,6 @@ a { text-decoration: none; color: inherit; cursor: pointer; }
   min-height: calc(100vh - var(--navbar-height));
 }
 
-.app-topbar {
-  height: var(--topbar-height);
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-light);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  position: sticky; top: 0; z-index: 100;
-  box-shadow: var(--shadow-sm);
-}
-
-.topbar-brand {
-  display: flex; align-items: center; gap: 8px;
-  font-weight: 700; color: var(--navy); font-size: 15px;
-}
-
-.company-chip {
-  display: flex; align-items: center; gap: 6px;
-  background: var(--orange-light);
-  border: 1px solid var(--orange);
-  border-radius: 20px;
-  padding: 3px 10px;
-  font-size: 11px; font-weight: 600;
-  color: var(--orange-dark);
-  white-space: nowrap; max-width: 180px; overflow: hidden;
-}
-
-.company-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
 /* ── Content Area ───────────────────────────────────────── */
 .content-area {
   padding: 18px;
@@ -731,7 +688,7 @@ a { text-decoration: none; color: inherit; cursor: pointer; }
 .chart-title i { color: var(--orange-dark); }
 
 .chart-hint {
-  font-size: 10px; color: var(--mono-0);
+  font-size: 10px; color: #ffffff;
   font-weight: 400; text-transform: none; letter-spacing: 0;
   margin-left: auto;
   margin-right: 8px;
@@ -826,6 +783,7 @@ thead th {
   white-space: nowrap;
   border-bottom: 1px solid var(--navy-dark);
   position: sticky; top: 0; z-index: 10;
+  background: var(--navy-dark);
 }
 
 tbody tr {
@@ -1051,111 +1009,6 @@ tbody tr:hover td:first-child { background: var(--bg-tertiary); }
 .row-danger:hover { background: #fee2e2 !important; }
 .row-danger td:first-child { background: #fef2f2; }
 .row-danger:hover td:first-child { background: #fee2e2 !important; }
-
-/* ── Bottom Nav (mobile) ────────────────────────────────── */
-.bottom-nav {
-  display: none;
-  position: fixed; bottom: 0; left: 0; right: 0;
-  height: var(--bottom-nav-height);
-  background: rgba(255,255,255,0.95);
-  border-top: 1px solid var(--border-light);
-  z-index: 500;
-  padding: 0 8px;
-  backdrop-filter: blur(8px);
-}
-
-.bnav-item {
-  flex: 1;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 2px;
-  color: var(--text-tertiary);
-  font-size: 10px; font-weight: 500;
-  transition: color var(--transition);
-  position: relative; cursor: pointer;
-}
-
-.bnav-item i { font-size: 20px; }
-.bnav-item.active { color: var(--navy); }
-
-.bnav-badge {
-  position: absolute; top: 4px; right: calc(50% - 20px);
-  background: var(--orange); color: white;
-  font-size: 9px; font-weight: 700;
-  padding: 1px 5px; border-radius: 20px;
-  min-width: 16px; text-align: center;
-  display: none;
-}
-
-/* ── Responsive ─────────────────────────────────────────── */
-@media (max-width: 1024px) {
-  .col-6 { grid-column: span 12; }
-  .col-4 { grid-column: span 6; }
-  .col-8 { grid-column: span 6; }
-}
-
-@media (max-width: 767.98px) {
-  .app-sidebar { display: none; }
-  .app-navbar  { display: none; }
-  .app-main {
-    margin-left: 0;
-    margin-top: 0;
-    padding-bottom: var(--bottom-nav-height);
-    min-height: 100vh;
-  }
-  .bottom-nav { display: flex; }
-  .content-area { padding: 12px; }
-  .chart-grid { grid-template-columns: 1fr; }
-  .col-4, .col-6, .col-8, .col-12 { grid-column: span 1; }
-  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-  .modal-overlay { padding: 10px; }
-  .toast-item { right: 12px; left: 12px; max-width: none; }
-  
-  .data-tabs-header {
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-  .data-subtab-btn {
-    flex: 1;
-    min-width: 100px;
-    justify-content: center;
-    padding: 8px 10px;
-    font-size: 11px;
-  }
-  .data-subtab-btn i {
-    display: none;
-  }
-  
-  .data-export-btn {
-    padding: 8px 12px;
-    font-size: 11px;
-  }
-  
-  .data-export-btn span {
-    display: none;
-  }
-  
-  .data-export-btn i {
-    font-size: 16px;
-  }
-  
-  .chart-download-btn {
-    width: 24px;
-    height: 24px;
-    font-size: 11px;
-  }
-  
-  .chart-download-btn i {
-    font-size: 12px;
-  }
-  
-  .chart-hint {
-    display: none;
-  }
-}
-
-@media (min-width: 768px) {
-  .app-topbar { display: none; }
-}
 
 /* ── Download Report Section ────────────────────────────── */
 /* (Styles from original download section preserved) */
